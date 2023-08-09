@@ -1,6 +1,8 @@
 # ProbabilisticBuildingAnomaly
 Repo from *Building consumption anomaly detection: A comparative study of two probabilistic approaches* paper
+
 Davor Stjelja, Vladimir Kuzmanovski, Risto Kosonen, Juha Jokisalo 
+
 Aalto University, Granlund Oy, Vaisala Oyj, Nanjing Tech University
 
 
