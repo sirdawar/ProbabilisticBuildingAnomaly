@@ -3,10 +3,56 @@ from numpy import nan
 import pandas as pd
 import gc
 from sklearn.preprocessing import MinMaxScaler
-
+from workalendar.europe import Finland
 from GaussianTargetEncoder import GaussianTargetEncoder
 
 def Preprocessing(ds_raw,Train_Start,Train_End,Test_Start,Test_End):
+    # Clean from zero and outliers + MinMax scaler
+    def replace(group):
+        mean, std = group.mean(), group.std()
+        outliers = (group - mean).abs() > 4*std #Changed to 4times instead of 3 28072022
+        group[outliers] = "outlier"
+        return group
+    ds_raw['Consumption_corrected']=ds_raw['Consumption']
+    ds_raw['Consumption_corrected']=ds_raw['Consumption_corrected'].transform(replace)
+    ds_raw['Outlier']=ds_raw.Consumption_corrected=="outlier"
+    ds_raw['Consumption']=ds_raw.Consumption_corrected.replace(['outlier'],nan)
+    ds_raw=ds_raw.drop(columns=['Consumption_corrected','Outlier'])
+
+    def upper_boundary(group):
+        values = group
+        median = np.percentile(values, 50)
+        std = np.std(values)
+        upper_b = median + 6*std
+        return upper_b
+
+    def cleaned_data(group, upper_b, window_size=168):
+        times_outlier = group[group['Consumption'] > upper_b]['Date']
+        ind_to_change = group['Consumption'] > upper_b
+
+        # Calculate the rolling median with the specified window size for previous data points
+        rolling_median = group['Consumption'].rolling(window=window_size).median().shift(1)
+        
+        # Handle the edge case for the start of the data where the rolling median cannot be calculated
+        rolling_median.iloc[0] = group['Consumption'].iloc[0]
+
+        # Update the 'Consumption' values with the median of the previous values for the identified outliers
+        group['Consumption'].loc[ind_to_change] = rolling_median.loc[ind_to_change]
+
+        return group['Consumption'], times_outlier
+    upper_b=upper_boundary(ds_raw['Consumption'])
+    ds_raw['Consumption'], times_outlier = cleaned_data(ds_raw, upper_b, window_size=168)
+    # Get Public holidays
+    cal = Finland()
+    start = ds_raw.Date.min()
+    start_year = start.year  # Assuming dates are Timestamp objects.
+    end = ds_raw.Date.max()
+    end_year = end.year 
+    holidays = set(holiday[0] 
+                for year in range(start_year, end_year + 1)
+                for holiday in cal.holidays(year)
+                if start <= pd.Timestamp(holiday[0]) <= end)
+    ds_raw['PubHol']=ds_raw.Date.dt.date.isin(holidays).astype(int)
 
     mask_train=(ds_raw['Date'] > Train_Start) & (ds_raw['Date'] <= Train_End)
     mask_test = (ds_raw['Date'] > Test_Start) & (ds_raw['Date'] <= Test_End)

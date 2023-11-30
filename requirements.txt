@@ -6,3 +6,5 @@ lightgbm
 plotly
 MAPIE
 xgboostlss @ git+https://github.com/StatMixedML/XGBoostLSS.git@ae13b7e78528a667570e753e059ec4bcb872ac8e
+pydantic
+workalendar
