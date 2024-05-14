@@ -1,5 +1,7 @@
 # ProbabilisticBuildingAnomaly
-Repo from *Building consumption anomaly detection: A comparative study of two probabilistic approaches* paper
+Repo from published paper:
+*Stjelja, D., Kuzmanovski, V., Kosonen, R., & Jokisalo, J. (2024). Building consumption anomaly detection: A comparative study of two probabilistic approaches. Energy and Buildings, 114249.*
+https://doi.org/10.1016/j.enbuild.2024.114249 
 
 Davor Stjelja, Vladimir Kuzmanovski, Risto Kosonen, Juha Jokisalo 
 
